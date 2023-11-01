@@ -36,11 +36,11 @@ public class Robot extends TimedRobot {
     double controllerLeft = controller.getLeftY();
     double controllerRight = controller.getRightY();
 
-    leftBackMotor.set(controllerLeft * 0.5);
-    leftFrontMotor.set(controllerLeft * 0.5);
+    leftBackMotor.set(controllerLeft * -0.5);
+    leftFrontMotor.set(controllerLeft * -0.5);
 
-    rightBackMotor.set(controllerRight * -0.5);
-    rightFrontMotor.set(controllerRight * -0.5);
+    rightBackMotor.set(controllerRight * 0.5);
+    rightFrontMotor.set(controllerRight * 0.5);
   }
 
   @Override

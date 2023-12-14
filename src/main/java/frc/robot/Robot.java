@@ -22,7 +22,7 @@ public class Robot extends TimedRobot {
   private PWMVictorSPX rightFrontMotor = new PWMVictorSPX(3);
   private PWMVictorSPX rightBackMotor = new PWMVictorSPX(1);
   private Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
-  private DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 1, 0);
+  private DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
   private Joystick leftController = new Joystick(0);
 
   private final ControlCurve<?, ?> driveCurve = ControlCurves.power(3)
@@ -43,11 +43,11 @@ public class Robot extends TimedRobot {
 
     rightBackMotor.set(driveCurve.get(controllerRight) * 0.5);
     rightFrontMotor.set(driveCurve.get(controllerRight) * 0.5);
-    //revers
+    //extends the pyston
     if (leftController.getRawButton(6)) {
       piston.set(DoubleSolenoid.Value.kForward);
     }
-    //extends the piston
+    //contracts the pyston
     if (leftController.getRawButton(4)) {
       piston.set(DoubleSolenoid.Value.kReverse);
     }

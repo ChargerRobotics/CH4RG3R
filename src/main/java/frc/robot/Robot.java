@@ -5,66 +5,69 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.datasiqn.robotutils.controlcurve.ControlCurve;
-import com.datasiqn.robotutils.controlcurve.ControlCurves;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
 public class Robot extends TimedRobot {
-  private PWMVictorSPX leftFrontMotor = new PWMVictorSPX(0);
-  private PWMVictorSPX leftBackMotor = new PWMVictorSPX(2);
-  private PWMVictorSPX rightFrontMotor = new PWMVictorSPX(3);
-  private PWMVictorSPX rightBackMotor = new PWMVictorSPX(1);
-  private Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
-  private DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
-  private Joystick leftController = new Joystick(0);
-
-  private final ControlCurve<?, ?> driveCurve = ControlCurves.power(3)
-      .withMinimumPower(0.1)
-      .withDeadZone(0.1)
-      .build();
-
-  private XboxController controller = new XboxController(2);
-
-
+  private final PWMVictorSPX leftFrontMotor = new PWMVictorSPX(0);
+  private final PWMVictorSPX leftBackMotor = new PWMVictorSPX(2);
+  private final PWMVictorSPX rightFrontMotor = new PWMVictorSPX(3);
+  private final PWMVictorSPX rightBackMotor = new PWMVictorSPX(1);
+  private final CANSparkMax armMotor = new CANSparkMax(1, MotorType.kBrushless);
+  private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
+  private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+  private final Joystick leftController = new Joystick(0);
+  private final Joystick rightController = new Joystick(1);
 
   @Override
   public void teleopPeriodic() {
-    double controllerLeft = controller.getLeftY();
-    double controllerRight = controller.getRightY();
-    leftBackMotor.set(driveCurve.get(controllerLeft) * -0.5);
-    leftFrontMotor.set(driveCurve.get(controllerLeft) * -0.5);
+    double leftX = Math.abs(leftController.getX()) < 0.1 ? 0 : leftController.getX();
+    double leftPower = MathUtil.clamp(leftController.getY() + leftX, -1, 1);
+    double rightPower = MathUtil.clamp(leftController.getY() - leftX, -1, 1);
+    leftBackMotor.set(-leftPower);
+    leftFrontMotor.set(-leftPower);
 
-    rightBackMotor.set(driveCurve.get(controllerRight) * 0.5);
-    rightFrontMotor.set(driveCurve.get(controllerRight) * 0.5);
-    //extends the pyston
-    if (leftController.getRawButton(6)) {
-      piston.set(DoubleSolenoid.Value.kForward);
-    }
-    //contracts the pyston
-    if (leftController.getRawButton(4)) {
-      piston.set(DoubleSolenoid.Value.kReverse);
-    }
-    //emergeny shutoff for the presure 
-    if (leftController.getRawButton(3)){
+    rightBackMotor.set(rightPower);
+    rightFrontMotor.set(rightPower);
+
+    piston.set(rightController.getTrigger() ? DoubleSolenoid.Value.kForward : DoubleSolenoid.Value.kReverse);
+
+    if (rightController.getRawButton(2)) {
       compressor.disable();
     }
+
+    armMotor.set(rightController.getY() * 0.2);
+
+    SmartDashboard.putNumber("joystick y", leftController.getY());
+    SmartDashboard.putNumber("joystick x", leftController.getX());
+    SmartDashboard.putNumber("left power", leftPower);
+    SmartDashboard.putNumber("right power", rightPower);
+    SmartDashboard.putNumber("Left front power", leftFrontMotor.get());
+    SmartDashboard.putNumber("Left back power", leftBackMotor.get());
+    SmartDashboard.putNumber("Right front power", rightFrontMotor.get());
+    SmartDashboard.putNumber("Right back power", rightBackMotor.get());
+
+    SmartDashboard.putNumber("Arm power", armMotor.get());
+    SmartDashboard.putNumber("Arm Encoder", armMotor.getEncoder().getPosition());
   }
 
   @Override
   public void disabledInit() {
     compressor.disable();
-
   }
 
   @Override
   public void disabledExit() {
-    compressor.enableDigital();
+    // compressor.enableDigital();
+    armMotor.getEncoder().setPosition(0);
   }
 }

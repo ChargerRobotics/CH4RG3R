@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.CANSparkMax;
@@ -23,6 +24,7 @@ public class Robot extends TimedRobot {
   private final PWMVictorSPX rightFrontMotor = new PWMVictorSPX(3);
   private final PWMVictorSPX rightBackMotor = new PWMVictorSPX(1);
   private final CANSparkMax armMotor = new CANSparkMax(1, MotorType.kBrushless);
+  private final Spark gearMotor = new Spark(4);
   private final Compressor compressor = new Compressor(PneumaticsModuleType.CTREPCM);
   private final DoubleSolenoid piston = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
   private final Joystick leftController = new Joystick(0);
@@ -46,6 +48,7 @@ public class Robot extends TimedRobot {
     }
 
     armMotor.set(rightController.getY() * 0.2);
+    gearMotor.set(rightController.getX() * 0.25);
 
     SmartDashboard.putNumber("joystick y", leftController.getY());
     SmartDashboard.putNumber("joystick x", leftController.getX());
